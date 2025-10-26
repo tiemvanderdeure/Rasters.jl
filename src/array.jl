@@ -303,17 +303,11 @@ end
 # And Float64
 Raster(::UndefInitializer, ext::Union{Extents.Extent,DimTuple}; kw...) = 
     Raster{Float64}(undef, ext; kw...)
-function Raster{T}(x::UndefInitializer, dims::DimTuple; 
+function Raster{T}(x::UndefInitializer, dims::DD.MaybeDimTuple; 
     missingval=nokw, kw...
 ) where T
     T1 = isnokwornothing(missingval) ? T : promote_type(T, typeof(missingval))
-    Raster(Array{T1}(undef, size(dims)), dims; missingval, kw...)
-end
-function Raster{T}(x::UndefInitializer, dims::Tuple{}; 
-    missingval=nokw, kw...
-) where T
-    T1 = isnokwornothing(missingval) ? T : promote_type(T, typeof(missingval))
-    Raster(Array{T1}(undef, ()), dims; missingval, kw...)
+    Raster(Array{T1}(undef, map(length, dims)), dims; missingval, kw...)
 end
 function Raster{T}(::UndefInitializer, ext::Extents.Extent; 
     size=nothing, res=nothing, crs=nothing, mappedcrs=nothing, sampling=Points(), closed=false, kw...
@@ -321,6 +315,8 @@ function Raster{T}(::UndefInitializer, ext::Extents.Extent;
     dims = _extent2dims(ext; size, res, crs, mappedcrs, sampling, closed)
     Raster{T}(undef, dims; kw...)
 end
+Raster{T}(x::UndefInitializer, dims::Dimension...; kw...) where T = Raster{T}(x, dims; kw...)
+
 # Load a Raster from a string filename
 function Raster(filename::AbstractString; source=nokw, kw...)
     source = sourcetrait(filename, source)
